@@ -30,11 +30,7 @@ const movieSchema = mongoose.Schema({
     type: String,
     required: true,
   },
-  certification: {
-    type: String,
-    enum: ["U", "UA", "A", "PG", "PG-13", "R"],
-    required: true,
-  },
+
   country: {
     type: String,
     required: true,
