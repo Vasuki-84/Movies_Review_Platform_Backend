@@ -38,7 +38,6 @@ const createMovie = async (req, res) => {
     await newMovie.save();
     res.status(201).json({
       message: "Movie added successfully",
-      movie: newMovie,
     });
   } catch (err) {
     res.status(500).json({ message: "Movie not added" });
