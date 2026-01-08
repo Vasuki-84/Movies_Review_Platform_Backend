@@ -12,7 +12,7 @@ const {
 const authMiddleware = require("../middlewares/auth.middleware");
 
 // http://localhost:8081/movie/create
-router.post("/create", createMovie);
+router.post("/create", authMiddleware(["admin"]), createMovie);
 
 router.get("/", getAllMovies);
 
@@ -20,8 +20,8 @@ router.get("/:id", getMovieById);
 
 router.get("/name/:movieName", getMovieByName);
 
-router.put("/update/:id", updateMovie);
+router.put("/update/:id", authMiddleware(["admin"]), updateMovie);
 
-router.delete("/delete/:id", deleteMovie);
+router.delete("/delete/:id", authMiddleware(["admin"]), deleteMovie);
 
 module.exports = router;

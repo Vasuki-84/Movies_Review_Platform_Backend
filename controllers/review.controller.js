@@ -2,9 +2,10 @@ const reviewModel = require("../models/review.model");
 
 const postReview = async (req, res) => {
   try {
-    const { movieId, userId, review, rating } = req.body;
+    const { movieId, review, rating } = req.body;
+    const userId = req.user.userId;
 
-    if (!movieId || !userId || !review || !rating) {
+    if (!movieId || !review || !rating) {
       return res.status(400).json({ message: "All fields are required" });
     }
     if (rating < 1 || rating > 5) {
@@ -31,4 +32,21 @@ const postReview = async (req, res) => {
     });
   }
 };
-module.exports = postReview;
+
+const getAllReviews = async (req, res) => {
+  try {
+    const reviews = await reviewModel
+      .find()
+      .populate("userId", "name email")
+      .populate("movieId", "name year image")
+      .sort({ createdAt: -1 });
+
+    res.status(200).json(reviews);
+  } catch (error) {
+    res.status(500).json({
+      message: "Failed to fetch reviews",
+      error: error.message,
+    });
+  }
+};
+module.exports = { postReview, getAllReviews };
