@@ -11,7 +11,6 @@ const createMovie = async (req, res) => {
     genres,
     description,
     country,
-    casts, 
   } = req.body;
 
   try {
@@ -37,7 +36,7 @@ const createMovie = async (req, res) => {
       genres,
       description,
       country,
-      casts: casts || [], 
+      createdBy: req.user.id,
     });
 
     await newMovie.save();
@@ -47,28 +46,33 @@ const createMovie = async (req, res) => {
       movie: newMovie,
     });
   } catch (err) {
-    console.error(err);
+    console.error("Create Movie Error:", err);
     res.status(500).json({ message: "Movie not added" });
   }
 };
 
-// GET api
+// GET all movies api
 const getAllMovies = async (req, res) => {
   try {
-    const movies = await movieModel.find().sort({ createdAt: -1 });
+    const movies = await movieModel
+      .find({ createdBy: req.user.id })
+      .sort({ createdAt: -1 });
+
     res.status(200).json(movies);
   } catch (err) {
+    console.error("Get Movies Error:", err);
     res.status(500).json({ message: "Movie fetching failure" });
   }
 };
 
-// GET movie by name
+// GET movie by name api
 const getMovieByName = async (req, res) => {
   const { movieName } = req.params;
 
   try {
     const movie = await movieModel.findOne({
       movieName: { $regex: new RegExp(`^${movieName}$`, "i") },
+   
     });
 
     if (!movie) {
@@ -77,16 +81,20 @@ const getMovieByName = async (req, res) => {
 
     res.status(200).json(movie);
   } catch (err) {
+    console.error("Get Movie By Name Error:", err);
     res.status(500).json({ message: "Movie fetching failure" });
   }
 };
 
-// GET movie by id
+// GET movie by id api
 const getMovieById = async (req, res) => {
   const { id } = req.params;
 
   try {
-    const movie = await movieModel.findById(id);
+    const movie = await movieModel.findOne({
+      _id: id,
+     
+    });
 
     if (!movie) {
       return res.status(404).json({ message: "Movie not found" });
@@ -94,23 +102,26 @@ const getMovieById = async (req, res) => {
 
     res.status(200).json(movie);
   } catch (err) {
+    console.error("Get Movie By ID Error:", err);
     res.status(500).json({ message: "Movie fetching failure" });
   }
 };
 
-// PUT api
+// UPDATE api
 const updateMovie = async (req, res) => {
   const { id } = req.params;
 
   try {
-    const updatedMovie = await movieModel.findByIdAndUpdate(
-      id,
+    const updatedMovie = await movieModel.findOneAndUpdate(
+      { _id: id,  createdBy: req.user.id},
       req.body,
       { new: true, runValidators: true }
     );
 
     if (!updatedMovie) {
-      return res.status(404).json({ message: "Movie not found" });
+      return res
+        .status(404)
+        .json({ message: "Movie not found or access denied" });
     }
 
     res.status(200).json({
@@ -118,6 +129,7 @@ const updateMovie = async (req, res) => {
       movie: updatedMovie,
     });
   } catch (err) {
+    console.error("Update Movie Error:", err);
     res.status(500).json({ message: "Movie updation failure" });
   }
 };
@@ -127,14 +139,20 @@ const deleteMovie = async (req, res) => {
   const { id } = req.params;
 
   try {
-    const deletedMovie = await movieModel.findByIdAndDelete(id);
+    const deletedMovie = await movieModel.findOneAndDelete({
+      _id: id,
+      createdBy: req.user.id,
+    });
 
     if (!deletedMovie) {
-      return res.status(404).json({ message: "Movie not found" });
+      return res
+        .status(404)
+        .json({ message: "Movie not found or access denied" });
     }
 
     res.status(200).json({ message: "Movie deleted successfully" });
   } catch (err) {
+    console.error("Delete Movie Error:", err);
     res.status(500).json({ message: "Movie deletion failed" });
   }
 };

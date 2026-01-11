@@ -9,6 +9,12 @@ const registerUser = async (req, res) => {
     if (!name || !email || !password || !role) {
       return res.status(400).json({ message: "All fields are required" });
     }
+
+    
+    if (!["user", "admin"].includes(role)) {
+      return res.status(400).json({ message: "Role must be 'user' or 'admin'" });
+    }
+
     const emailCheck = await userModel.findOne({ email });
 
     if (emailCheck) {
@@ -47,9 +53,7 @@ const loginUser = async (req, res) => {
     // JWT token
     const token = jwt.sign(
       {
-        userId: user._id,
-        name: user.name,
-        email: user.email,
+        id: user._id,
         role: user.role,
       },process.env.SECRET_KEY,
       { expiresIn: "24h" }

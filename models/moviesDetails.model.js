@@ -1,27 +1,11 @@
 const mongoose = require("mongoose");
 
-const castSchema = new mongoose.Schema(
-  {
-    name: {
-      type: String,
-      required: true,
-    },
-    image: {
-      type: String,
-      required: true,
-    },
-    character: {
-      type: String,
-    },
-  },
-  { _id: false }
-);
-
 const movieSchema = new mongoose.Schema(
   {
     movieName: {
       type: String,
       required: true,
+      trim: true,
     },
     posterImage: {
       type: String,
@@ -34,6 +18,7 @@ const movieSchema = new mongoose.Schema(
     language: {
       type: String,
       required: true,
+      trim: true,
     },
     duration: {
       type: String,
@@ -47,15 +32,20 @@ const movieSchema = new mongoose.Schema(
     description: {
       type: String,
       required: true,
+      trim: true,
     },
     country: {
       type: String,
       required: true,
+      trim: true,
     },
 
-    casts: {
-      type: [castSchema],
-      default: [],
+   
+    createdBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Admin",
+      required: true,
+      index: true,
     },
   },
   { timestamps: true }

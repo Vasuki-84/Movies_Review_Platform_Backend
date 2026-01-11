@@ -11,14 +11,16 @@ const {
 
 const authMiddleware = require("../middlewares/auth.middleware");
 
-// http://localhost:8081/movie/create
+
+
+// Create a new movie (Admin only)
 router.post("/create", authMiddleware(["admin"]), createMovie);
 
-router.get("/", getAllMovies);
+router.get("/get", authMiddleware(), getAllMovies);
 
-router.get("/:id", getMovieById);
+router.get("/name/:movieName",  getMovieByName);
 
-router.get("/name/:movieName", getMovieByName);
+router.get("/get/:id",  getMovieById);
 
 router.put("/update/:id", authMiddleware(["admin"]), updateMovie);
 
