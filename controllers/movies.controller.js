@@ -11,7 +11,9 @@ const createMovie = async (req, res) => {
     genres,
     description,
     country,
+    casts, 
   } = req.body;
+
   try {
     if (
       !movieName ||
@@ -23,8 +25,9 @@ const createMovie = async (req, res) => {
       !description ||
       !country
     ) {
-      return res.status(400).json({ message: "All fields are required" });
+      return res.status(400).json({ message: "All required fields missing" });
     }
+
     const newMovie = new movieModel({
       movieName,
       posterImage,
@@ -34,20 +37,25 @@ const createMovie = async (req, res) => {
       genres,
       description,
       country,
+      casts: casts || [], 
     });
+
     await newMovie.save();
+
     res.status(201).json({
       message: "Movie added successfully",
+      movie: newMovie,
     });
   } catch (err) {
+    console.error(err);
     res.status(500).json({ message: "Movie not added" });
   }
 };
 
-// GET all movies api
+// GET api
 const getAllMovies = async (req, res) => {
   try {
-    const movies = await movieModel.find();
+    const movies = await movieModel.find().sort({ createdAt: -1 });
     res.status(200).json(movies);
   } catch (err) {
     res.status(500).json({ message: "Movie fetching failure" });
@@ -59,26 +67,31 @@ const getMovieByName = async (req, res) => {
   const { movieName } = req.params;
 
   try {
-    const movie = await movieModel.findOne({ movieName });
+    const movie = await movieModel.findOne({
+      movieName: { $regex: new RegExp(`^${movieName}$`, "i") },
+    });
 
     if (!movie) {
       return res.status(404).json({ message: "Movie not found" });
     }
+
     res.status(200).json(movie);
   } catch (err) {
     res.status(500).json({ message: "Movie fetching failure" });
   }
 };
 
-// GET movie by ID
+// GET movie by id
 const getMovieById = async (req, res) => {
   const { id } = req.params;
+
   try {
     const movie = await movieModel.findById(id);
 
     if (!movie) {
       return res.status(404).json({ message: "Movie not found" });
     }
+
     res.status(200).json(movie);
   } catch (err) {
     res.status(500).json({ message: "Movie fetching failure" });
@@ -88,24 +101,41 @@ const getMovieById = async (req, res) => {
 // PUT api
 const updateMovie = async (req, res) => {
   const { id } = req.params;
+
   try {
-    const updateMovie = await movieModel.findByIdAndUpdate(id, req.body, {
-      new: true,
+    const updatedMovie = await movieModel.findByIdAndUpdate(
+      id,
+      req.body,
+      { new: true, runValidators: true }
+    );
+
+    if (!updatedMovie) {
+      return res.status(404).json({ message: "Movie not found" });
+    }
+
+    res.status(200).json({
+      message: "Movie updated successfully",
+      movie: updatedMovie,
     });
-    res.status(200).json({ message: "Movie updated" });
   } catch (err) {
-    res.status(500).json({ message: "Movie Updation failure" });
+    res.status(500).json({ message: "Movie updation failure" });
   }
 };
 
 // DELETE api
 const deleteMovie = async (req, res) => {
   const { id } = req.params;
+
   try {
-    await movieModel.findByIdAndDelete(id);
-    res.status(200).json({ message: "Movie Deleted Successfully " });
+    const deletedMovie = await movieModel.findByIdAndDelete(id);
+
+    if (!deletedMovie) {
+      return res.status(404).json({ message: "Movie not found" });
+    }
+
+    res.status(200).json({ message: "Movie deleted successfully" });
   } catch (err) {
-    res.status(500).json({ message: "Movie Deletion Failed" });
+    res.status(500).json({ message: "Movie deletion failed" });
   }
 };
 
