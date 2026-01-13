@@ -52,11 +52,28 @@ const createMovie = async (req, res) => {
 };
 
 // GET all movies api
+// const getAllMovies = async (req, res) => {
+//   try {
+//     const movies = await movieModel
+//       .find({ createdBy: req.user.id })
+//       .sort({ createdAt: -1 });
+
+//     res.status(200).json(movies);
+//   } catch (err) {
+//     console.error("Get Movies Error:", err);
+//     res.status(500).json({ message: "Movie fetching failure" });
+//   }
+// };
+
 const getAllMovies = async (req, res) => {
   try {
-    const movies = await movieModel
-      .find({ createdBy: req.user.id })
-      .sort({ createdAt: -1 });
+    let query = {};
+
+    if (req.user?.id) {
+      query.createdBy = req.user.id;
+    }
+
+    const movies = await movieModel.find(query).sort({ createdAt: -1 });
 
     res.status(200).json(movies);
   } catch (err) {
@@ -72,7 +89,6 @@ const getMovieByName = async (req, res) => {
   try {
     const movie = await movieModel.findOne({
       movieName: { $regex: new RegExp(`^${movieName}$`, "i") },
-   
     });
 
     if (!movie) {
@@ -93,7 +109,6 @@ const getMovieById = async (req, res) => {
   try {
     const movie = await movieModel.findOne({
       _id: id,
-     
     });
 
     if (!movie) {
@@ -113,7 +128,7 @@ const updateMovie = async (req, res) => {
 
   try {
     const updatedMovie = await movieModel.findOneAndUpdate(
-      { _id: id,  createdBy: req.user.id},
+      { _id: id, createdBy: req.user.id },
       req.body,
       { new: true, runValidators: true }
     );
@@ -156,6 +171,16 @@ const deleteMovie = async (req, res) => {
     res.status(500).json({ message: "Movie deletion failed" });
   }
 };
+// GET all movies (PUBLIC)
+const getPublicMovies = async (req, res) => {
+  try {
+    const movies = await movieModel.find().sort({ createdAt: -1 });
+    res.status(200).json(movies);
+  } catch (err) {
+    console.error("Get Public Movies Error:", err);
+    res.status(500).json({ message: "Movie fetching failure" });
+  }
+};
 
 module.exports = {
   createMovie,
@@ -164,4 +189,5 @@ module.exports = {
   getMovieById,
   getMovieByName,
   deleteMovie,
+  getPublicMovies,
 };

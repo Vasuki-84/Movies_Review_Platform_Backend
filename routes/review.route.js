@@ -12,5 +12,4 @@ const router = express.Router();
 router.post("/add", authMiddleware(["user"]), postReview);
 
 router.get("/get", getAllReviews);
-
 module.exports = router;
